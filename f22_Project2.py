@@ -102,10 +102,14 @@ def get_listing_information(listing_id):
     
     home_info = soup.find_all('li', class_ = "l7n4lsf dir dir-ltr")
     bedroom_info = home_info[1].text.split()
-    num_of_bedrooms = int(bedroom_info[1])
+    if bedroom_info[1] == 'Studio':
+        num_of_bedrooms = 1
+    else:
+        num_of_bedrooms = int(bedroom_info[1])
     
     f.close()
     tup = (returned_policy_num, place_type, num_of_bedrooms)
+    print(tup)
     return tup
 
     
@@ -126,6 +130,17 @@ def get_detailed_listing_database(html_file):
     ]
     """
     pass
+    complete_listing_info = []
+    search_results = get_listings_from_search_results(html_file)
+    print(search_results)
+
+    for listing in search_results:
+        id = listing[2]
+        print(id)
+        search_results2 = get_listing_information(id)
+
+            
+
 
 
 def write_csv(data, filename):
