@@ -4,6 +4,7 @@ import re
 import os
 import csv
 import unittest
+import requests
 
 
 def get_listings_from_search_results(html_file):
@@ -25,7 +26,36 @@ def get_listings_from_search_results(html_file):
         ('Loft in Mission District', 210, '1944564'),  # example
     ]
     """
-    pass
+    list_of_listings = []
+    id_regex = '\/([0-9]+)\?'
+    name_list = []
+    price_list = []
+    id_list = []
+    search_page = open(html_file)
+    soup = BeautifulSoup(search_page, 'html.parser')
+    names = soup.find_all('div', class_ = "t1jojoys dir dir-ltr" )
+    for name in names:
+        name_list.append(name.text)
+
+    prices = soup.find_all('span', class_ = "_tyxjp1")
+    for price in prices:
+        price = int(price.text[1:])
+        price_list.append(price)
+
+    room_urls = soup.find_all('a', class_ = "ln2bl2p dir dir-ltr")
+    for room in room_urls:
+        link = room.get('href')
+        id = re.findall(id_regex, link)
+        for num in id:
+            id_list.append(num)
+
+    for i in range(len(name_list)):
+        tup = (name_list[i], price_list[i], id_list[i])
+        list_of_listings.append(tup)
+    
+    search_page.close()
+    return list_of_listings
+
 
 
 def get_listing_information(listing_id):
@@ -52,7 +82,33 @@ def get_listing_information(listing_id):
         number of bedrooms
     )
     """
-    pass
+    policy_num_list = []
+
+    file_name = 'html_files/' + 'listing_' + listing_id + '.html'
+    f = open(file_name)
+    soup = BeautifulSoup(f, 'html.parser')
+    policy_number_soup = soup.find('div', class_ = '_1k8vduze').find('span', class_ = 'll4r2nl dir dir-ltr')
+    policy_num = policy_number_soup.text
+    returned_policy_num = policy_num.split()[0]
+
+    place_type_words = soup.find('h2', class_ = '_14i3z6h').text.split()
+    #place_type_text = place_type_soup.text
+    if place_type_words[0] == "Private" or place_type_words[0] == "private":
+        place_type = 'Private Room'
+    elif place_type_words[0] == "Shared" or place_type_words[0] == "shared":
+        place_type = "Shared Room"
+    else:
+        place_type = "Entire Room"
+    
+    home_info = soup.find_all('li', class_ = "l7n4lsf dir dir-ltr")
+    bedroom_info = home_info[1].text.split()
+    num_of_bedrooms = int(bedroom_info[1])
+    
+    f.close()
+    tup = (returned_policy_num, place_type, num_of_bedrooms)
+    return tup
+
+    
 
 
 def get_detailed_listing_database(html_file):
@@ -147,11 +203,12 @@ class TestCases(unittest.TestCase):
         # check that the variable you saved after calling the function is a list
         self.assertEqual(type(listings), list)
         # check that each item in the list is a tuple
-
+        for item in listings:
+            self.assertEqual(type(item), tuple)
         # check that the first title, cost, and listing id tuple is correct (open the search results html and find it)
-
+        self.assertEqual(listings[0], ('Loft in Mission District', 210, '1944564'))
         # check that the last title is correct (open the search results html and find it)
-        pass
+        self.assertEqual(listings[-1][0], 'Guest suite in Mission District')
 
     def test_get_listing_information(self):
         html_list = ["1623609",
@@ -174,12 +231,12 @@ class TestCases(unittest.TestCase):
             # check that the third element in the tuple is an int
             self.assertEqual(type(listing_information[2]), int)
         # check that the first listing in the html_list has policy number 'STR-0001541'
-
+        self.assertEqual(listing_informations[0][0], 'STR-0001541')
         # check that the last listing in the html_list is a "Private Room"
-
+        self.assertEqual(listing_informations[-1][1], "Private Room")
         # check that the third listing has one bedroom
+        self.assertEqual(listing_informations[2][2], 1)
 
-        pass
 
     def test_get_detailed_listing_database(self):
         # call get_detailed_listing_database on "html_files/mission_district_search_results.html"
@@ -200,7 +257,7 @@ class TestCases(unittest.TestCase):
 
         pass
 
-    def test_write_csv(self):
+    #def test_write_csv(self):
         # call get_detailed_listing_database on "html_files/mission_district_search_results.html"
         # and save the result to a variable
         detailed_database = get_detailed_listing_database("html_files/mission_district_search_results.html")
@@ -222,7 +279,7 @@ class TestCases(unittest.TestCase):
 
         pass
 
-    def test_check_policy_numbers(self):
+    #def test_check_policy_numbers(self):
         # call get_detailed_listing_database on "html_files/mission_district_search_results.html"
         # and save the result to a variable
         detailed_database = get_detailed_listing_database("html_files/mission_district_search_results.html")
