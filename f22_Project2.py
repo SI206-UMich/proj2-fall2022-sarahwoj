@@ -203,7 +203,29 @@ def check_policy_numbers(data):
     ]
 
     """
-    pass
+    returned_listing_ids = []
+    correct_policy_nums = []
+    
+
+    regex1 = '(^20[0-9]{2}\-0{2}[0-9]{4}STR)'
+    regex2 = '(^STR\-0{3}[0-9]{4})'
+    for listing in data:
+        policy_num = listing[3]
+        id = listing[2]
+        
+        if policy_num != 'Pending' and policy_num != 'Exempt':
+            if re.search(regex1, policy_num):
+                correct_policy_nums.append(policy_num)
+            elif re.search(regex2, policy_num):
+                correct_policy_nums.append(policy_num)
+            else:
+                returned_listing_ids.append(id)
+  
+    return returned_listing_ids
+
+
+
+
 
 
 def extra_credit(listing_id):
@@ -310,20 +332,22 @@ class TestCases(unittest.TestCase):
         self.assertEqual(csv_lines[-1], ['Apartment in Mission District','399','28668414','Pending','Entire Room','2'])
     
 
-    #def test_check_policy_numbers(self):
+    def test_check_policy_numbers(self):
         # call get_detailed_listing_database on "html_files/mission_district_search_results.html"
         # and save the result to a variable
-    #    detailed_database = get_detailed_listing_database("html_files/mission_district_search_results.html")
+        detailed_database = get_detailed_listing_database("html_files/mission_district_search_results.html")
         # call check_policy_numbers on the variable created above and save the result as a variable
-    #    invalid_listings = check_policy_numbers(detailed_database)
+        invalid_listings = check_policy_numbers(detailed_database)
         # check that the return value is a list
-    #    self.assertEqual(type(invalid_listings), list)
+        self.assertEqual(type(invalid_listings), list)
         # check that there is exactly one element in the string
-
+        self.assertEqual(len(invalid_listings), 1)
         # check that the element in the list is a string
-
+        for item in invalid_listings:
+             self.assertEqual(type(item), str)
         # check that the first element in the list is '16204265'
-    pass
+        self.assertEqual(invalid_listings[0], '16204265')
+
 
 
 if __name__ == '__main__':
