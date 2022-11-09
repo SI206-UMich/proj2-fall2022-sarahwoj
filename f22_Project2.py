@@ -4,7 +4,6 @@ import re
 import os
 import csv
 import unittest
-import requests
 
 
 def get_listings_from_search_results(html_file):
@@ -82,7 +81,6 @@ def get_listing_information(listing_id):
         number of bedrooms
     )
     """
-    policy_num_list = []
 
     file_name = 'html_files/' + 'listing_' + listing_id + '.html'
     f = open(file_name)
@@ -220,12 +218,8 @@ def check_policy_numbers(data):
                 correct_policy_nums.append(policy_num)
             else:
                 returned_listing_ids.append(id)
-  
+                
     return returned_listing_ids
-
-
-
-
 
 
 def extra_credit(listing_id):
